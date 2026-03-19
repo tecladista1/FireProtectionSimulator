@@ -52,6 +52,11 @@ class FireProtectionSimulator:
         else:
             local_ip = get_local_ip()
             
+        try:
+            BAC0.log_level('error')
+        except:
+            pass
+            
         print(f"Initializing BACnet server on {local_ip}/24...")
         self.bacnet = BAC0.lite(ip=f"{local_ip}/24", deviceId=1234)
         self.objects = {}
@@ -63,9 +68,9 @@ class FireProtectionSimulator:
         for i, (tag_id, tag_name) in enumerate(TAGS.items(), start=1):
             obj = BinaryValueObject(
                 objectIdentifier=('binaryValue', i),
-                objectName=tag_name,
+                objectName=tag_id,
                 presentValue='inactive',
-                description=f"{tag_id} - {tag_name}",
+                description=tag_name,
             )
             # add object to the BAC0 app
             self.bacnet.this_application.add_object(obj)
