@@ -46,8 +46,12 @@ TAGS = {
 }
 
 class FireProtectionSimulator:
-    def __init__(self):
-        local_ip = get_local_ip()
+    def __init__(self, ip_address=None):
+        if ip_address:
+            local_ip = ip_address
+        else:
+            local_ip = get_local_ip()
+            
         print(f"Initializing BACnet server on {local_ip}/24...")
         self.bacnet = BAC0.lite(ip=f"{local_ip}/24", deviceId=1234)
         self.objects = {}
@@ -250,7 +254,8 @@ def print_menu(sim):
     print("="*45)
 
 def main():
-    sim = FireProtectionSimulator()
+    ip_address = sys.argv[1] if len(sys.argv) > 1 else None
+    sim = FireProtectionSimulator(ip_address=ip_address)
     sim.scenario_standby()
     
     while True:
