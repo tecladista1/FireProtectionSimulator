@@ -43,11 +43,19 @@ python fire_protection_simulator.py
 An interactive menu will appear in the terminal, allowing you to select different system scenarios (1 through 6). 
 Selecting a scenario will instantly update the 19 BACnet tags being broadcasted by your Linux VM, making them available to any SCADA, Dashboard, or BMS software querying the VM's IP address on port 47808.
 
-## Scenarios
+## Scenarios & Auto-Transitions
 
-1.  **STANDBY**: pressure 7 bar, all flow events FALSE, pumps OFF
-2.  **MINOR LOSS OF PRESSURE**: Jockey starts (no tag for jockey state but Jockey_Fault_Active=FALSE)
-3.  **DIESEL PUMP TEST**: Valve_Discharge_Closed=TRUE, Pump_Run_Event=TRUE
-4.  **SPRINKLER SYSTEM DEMAND**: Valve_Sprinkler_Main_Closed=FALSE, Sprinkler_Flow_Event=TRUE, Post_Flow_Event=TRUE, Pump_Run_Event=TRUE
-5.  **RIA HOSE DEMAND**: RIA_Flow_Event=TRUE, Pump_Run_Event=TRUE
-6.  **TANK DEPLETED**: Tank_Low_Active=TRUE, Tank_High_Active=FALSE, Post_Flow_Event=TRUE
+The simulator features 6 built-in scenarios. By default, it operates on an active background timer loop:
+
+1. **STANDBY**: Only `Valve_Poste_Closed` (TAG 18) active.
+   - **Cycle**: Runs for **60 minutes**. If uninterrupted, it automatically triggers a 5-minute **DIESEL PUMP TEST** (Scenario 3) and then loops back to Standby.
+2. **MINOR LOSS OF PRESSURE**: Only `Sprinkler_Flow_Event` (TAG 3) & `Valve_Poste_Closed` (TAG 18) active.
+   - **Cycle**: Runs for **45 seconds**, then auto-reverts to STANDBY.
+3. **DIESEL PUMP TEST**: Only `Pump_Run_Event` (TAG 4), `Valve_Discharge_Closed` (TAG 6) & `Valve_Poste_Closed` (TAG 18) active.
+   - **Cycle**: Runs for **5 minutes**, then auto-reverts to STANDBY.
+4. **SPRINKLER SYSTEM DEMAND**: Only `Sprinkler_Flow_Event` (TAG 3), `Pump_Run_Event` (TAG 4) & `Valve_Poste_Closed` (TAG 18) active.
+   - **Cycle**: Runs for **15 minutes**, then auto-transitions to TANK DEPLETED (Scenario 6).
+5. **RIA HOSE DEMAND**: Only `RIA_Flow_Event` (TAG 1), `Pump_Run_Event` (TAG 4) & `Valve_Poste_Closed` (TAG 18) active.
+   - **Cycle**: Runs for **15 minutes**, then auto-transitions to TANK DEPLETED (Scenario 6).
+6. **TANK DEPLETED**: Only `RIA_Flow_Event` (TAG 1), `Post_Flow_Event` (TAG 2), `Sprinkler_Flow_Event` (TAG 3) & `Tank_Low_Active` (TAG 8) active.
+   - **Cycle**: Runs for **10 minutes**, then auto-reverts to STANDBY.
