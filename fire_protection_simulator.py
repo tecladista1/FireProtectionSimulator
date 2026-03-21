@@ -124,9 +124,33 @@ class FireProtectionSimulator:
         # Only tag 18 is true
         self.set_tag("Valve_Poste_Closed", True)
 
+    def _scenario_standby_task(self):
+        while True:
+            self._scenario_standby_logic()
+            
+            # Wait 60 minutes
+            if self._sleep(3600.0): return
+            
+            print("\n\n>> Auto-transition: 60 minutes in STANDBY. Transitioning to DIESEL PUMP TEST.")
+            self._set_active_scenario("DIESEL PUMP TEST")
+            self.reset_all()
+            # Only tags 4, 6 and 18 are true
+            self.set_tag("Pump_Run_Event", True)
+            self.set_tag("Valve_Discharge_Closed", True)
+            self.set_tag("Valve_Poste_Closed", True)
+            
+            print_menu(self)
+            print("Select an option (0-7): ", end="", flush=True)
+            
+            # Diesel test runs for 5 minutes
+            if self._sleep(300.0): return
+            
+            print("\n\n>> Auto-transition: 5 minutes elapsed. Returning to STANDBY.")
+            print_menu(self)
+            print("Select an option (0-7): ", end="", flush=True)
+
     def scenario_standby(self):
-        self._cancel_task()
-        self._scenario_standby_logic()
+        self._start_background_task(self._scenario_standby_task)
 
     def _scenario_minor_loss_task(self):
         self._set_active_scenario("MINOR LOSS OF PRESSURE")
