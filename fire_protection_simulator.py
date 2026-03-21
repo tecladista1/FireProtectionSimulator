@@ -283,7 +283,14 @@ def print_menu(sim):
     print("="*45)
 
 def main():
-    ip_address = sys.argv[1] if len(sys.argv) > 1 else None
+    if len(sys.argv) > 1:
+        ip_address = sys.argv[1]
+    else:
+        auto_ip = get_local_ip()
+        print("\n=== NETWORK SETUP ===")
+        user_input = input(f"Enter the IP address for the BACnet server to use (Press Enter to use auto-detected IP [{auto_ip}]): ").strip()
+        ip_address = user_input if user_input else auto_ip
+        
     sim = FireProtectionSimulator(ip_address=ip_address)
     sim.scenario_standby()
     
