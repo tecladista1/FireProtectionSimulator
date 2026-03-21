@@ -40,8 +40,13 @@ Execute the script using Python:
 python fire_protection_simulator.py
 ```
 
-An interactive menu will appear in the terminal, allowing you to select different system scenarios (1 through 6). 
-Selecting a scenario will instantly update the 19 BACnet tags being broadcasted by your Linux VM, making them available to any SCADA, Dashboard, or BMS software querying the VM's IP address on port 47808.
+Upon launching, the script will prompt you to enter the IP address for the BACnet server to bind to (or press Enter to safely use the auto-detected IP). Alternatively, you can explicitly launch it and bypass the prompt with a target IP:
+```bash
+python fire_protection_simulator.py <target_ip_address>
+```
+
+An interactive menu will then appear in the terminal, allowing you to select different system scenarios (1 through 6). 
+Selecting a scenario will instantly update the 19 BACnet tags being broadcasted, making them available to any SCADA, Dashboard, or BMS software querying the simulator's IP address on port 47808.
 
 ## Scenarios & Auto-Transitions
 
