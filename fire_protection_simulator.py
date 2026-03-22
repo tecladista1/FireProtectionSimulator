@@ -121,7 +121,8 @@ class FireProtectionSimulator:
     def _cancel_task(self):
         if self._current_task and self._current_task.is_alive():
             self._cancel_event.set()
-            self._current_task.join(timeout=1.0)
+            if self._current_task != threading.current_thread():
+                self._current_task.join(timeout=1.0)
 
     def _sleep(self, seconds):
         """Wait for given seconds. Returns True if canceled."""
@@ -173,7 +174,7 @@ class FireProtectionSimulator:
         self.set_tag("Sprinkler_Flow_Event", False)
         
         print("\n\n>> Auto-transition: 45 seconds elapsed. Returning to STANDBY.")
-        self._scenario_standby_logic()
+        self.scenario_standby()
         print_menu(self)
         print("Select an option (0-7): ", end="", flush=True)
 
@@ -192,7 +193,7 @@ class FireProtectionSimulator:
         if self._sleep(300.0): return
         
         print("\n>> Auto-transition: 5 minutes elapsed. Returning to STANDBY.")
-        self._scenario_standby_logic()
+        self.scenario_standby()
         print_menu(self)
         print("Select an option (0-7): ", end="", flush=True)
 
@@ -211,17 +212,7 @@ class FireProtectionSimulator:
         if self._sleep(900.0): return
         
         print("\n\n>> Auto-transition: 15 minutes elapsed. Moving to TANK DEPLETED.")
-        self._scenario_tank_depleted_logic()
-        print_menu(self)
-        print("Select an option (0-7): ", end="", flush=True)
-        
-        # System stays in Tank Depleted for 10 minutes
-        if self._sleep(600.0): return
-        
-        print("\n\n>> Auto-transition: Tank Depleted for 10 minutes. Returning to STANDBY.")
-        self._scenario_standby_logic()
-        print_menu(self)
-        print("Select an option (0-7): ", end="", flush=True)
+        self.scenario_tank_depleted()
 
     def scenario_sprinkler_demand(self):
         self._start_background_task(self._scenario_sprinkler_demand_task)
@@ -238,17 +229,7 @@ class FireProtectionSimulator:
         if self._sleep(900.0): return
         
         print("\n\n>> Auto-transition: 15 minutes elapsed. Moving to TANK DEPLETED.")
-        self._scenario_tank_depleted_logic()
-        print_menu(self)
-        print("Select an option (0-7): ", end="", flush=True)
-        
-        # System stays in Tank Depleted for 10 minutes
-        if self._sleep(600.0): return
-        
-        print("\n\n>> Auto-transition: Tank Depleted for 10 minutes. Returning to STANDBY.")
-        self._scenario_standby_logic()
-        print_menu(self)
-        print("Select an option (0-7): ", end="", flush=True)
+        self.scenario_tank_depleted()
 
     def scenario_ria_demand(self):
         self._start_background_task(self._scenario_ria_demand_task)
@@ -269,7 +250,7 @@ class FireProtectionSimulator:
         if self._sleep(600.0): return
         
         print("\n\n>> Auto-transition: Tank Depleted for 10 minutes. Returning to STANDBY.")
-        self._scenario_standby_logic()
+        self.scenario_standby()
         print_menu(self)
         print("Select an option (0-7): ", end="", flush=True)
 
