@@ -4,15 +4,24 @@ import threading
 import socket
 
 def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ip = '127.0.0.1'
     try:
-        s.connect(('10.255.255.255', 1))
-        IP = s.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
-    finally:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
         s.close()
-    return IP
+    except Exception:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(('10.255.255.255', 1))
+            ip = s.getsockname()[0]
+            s.close()
+        except Exception:
+            try:
+                ip = socket.gethostbyname(socket.gethostname())
+            except Exception:
+                pass
+    return ip
 
 try:
     import BAC0
@@ -282,13 +291,46 @@ def print_menu(sim):
     print("0) EXIT")
     print("="*45)
 
+def get_input_timeout(prompt, timeout, default):
+    print(f"{prompt} (Timeout in {timeout}s)\n> ", end="", flush=True)
+    if sys.platform == 'win32':
+        import msvcrt
+        start_time = time.time()
+        input_str = ""
+        while time.time() - start_time < timeout:
+            if msvcrt.kbhit():
+                char = msvcrt.getche()
+                if char in (b'\r', b'\n'):
+                    print()
+                    return input_str if input_str else default
+                elif char == b'\x08': # Backspace
+                    input_str = input_str[:-1]
+                    print(" \b", end="", flush=True)
+                else:
+                    try:
+                        input_str += char.decode('utf-8')
+                    except UnicodeDecodeError:
+                        pass
+            time.sleep(0.05)
+        print(f"\n>> Timeout reached. Defaulting to: {default}\n")
+        return default
+    else:
+        import select
+        i, o, e = select.select([sys.stdin], [], [], timeout)
+        if i:
+            val = sys.stdin.readline().strip()
+            return val if val else default
+        else:
+            print(f"\n>> Timeout reached. Defaulting to: {default}\n")
+            return default
+
 def main():
     if len(sys.argv) > 1:
         ip_address = sys.argv[1]
     else:
         auto_ip = get_local_ip()
         print("\n=== NETWORK SETUP ===")
-        user_input = input(f"Enter the IP address for the BACnet server to use (Press Enter to use auto-detected IP [{auto_ip}]): ").strip()
+        user_input = get_input_timeout(f"Enter the IP address for the BACnet server to use (Press Enter to use auto-detected IP [{auto_ip}])", 10, auto_ip)
         ip_address = user_input if user_input else auto_ip
         
     sim = FireProtectionSimulator(ip_address=ip_address)
