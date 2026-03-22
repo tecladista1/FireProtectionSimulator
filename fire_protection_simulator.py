@@ -141,7 +141,6 @@ class FireProtectionSimulator:
             # Wait 60 minutes
             if self._sleep(3600.0): return
             
-            print("\n\n>> Auto-transition: 60 minutes in STANDBY. Transitioning to DIESEL PUMP TEST.")
             self._set_active_scenario("DIESEL PUMP TEST")
             self.reset_all()
             # Only tags 4, 6 and 18 are true
@@ -149,12 +148,14 @@ class FireProtectionSimulator:
             self.set_tag("Valve_Discharge_Closed", True)
             self.set_tag("Valve_Poste_Closed", True)
             
+            print("\n\n>> Auto-transition: 60 minutes in STANDBY. Transitioning to DIESEL PUMP TEST.")
             print_menu(self)
             print("Select an option (0-7): ", end="", flush=True)
             
             # Diesel test runs for 5 minutes
             if self._sleep(300.0): return
             
+            self._scenario_standby_logic()
             print("\n\n>> Auto-transition: 5 minutes elapsed. Returning to STANDBY.")
             print_menu(self)
             print("Select an option (0-7): ", end="", flush=True)
